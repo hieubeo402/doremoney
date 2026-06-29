@@ -1,93 +1,149 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calculator } from "lucide-react"
+import { Calculator, Loader2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 export function TransactionForm() {
+  const supabase = createClient()
   const [amountStr, setAmountStr] = useState("")
+  const [note, setNote] = useState("")
+  const [categoryId, setCategoryId] = useState("")
+  const [walletId, setWalletId] = useState("")
+  
+  const [categories, setCategories] = useState<any[]>([])
+  const [wallets, setWallets] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
 
-  // Hàm format số có dấu phẩy: 1,000,000
+  useEffect(() => {
+    async function fetchData() {
+      const [cats, walls] = await Promise.all([
+        supabase.from('categories').select('*'),
+        supabase.from('wallets').select('*')
+      ])
+      if (cats.data) setCategories(cats.data)
+      if (walls.data) {
+        setWallets(walls.data)
+        if (walls.data.length > 0) setWalletId(walls.data[0].id)
+      }
+      setFetching(false)
+    }
+    fetchData()
+  }, [])
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Xoá mọi ký tự không phải số
     const val = e.target.value.replace(/\D/g, "")
     if (!val) {
       setAmountStr("")
       return
     }
-    // Định dạng lại có dấu phẩy
     const formatted = new Intl.NumberFormat("en-US").format(parseInt(val, 10))
     setAmountStr(formatted)
   }
 
-  const evaluateExpression = () => {
-    try {
-      // Cho phép nhập phép tính như 50000+20000
-      // Đây chỉ là demo đơn giản. Không dùng eval trong thực tế để tránh XSS,
-      // nhưng ở đây giả định string chỉ chứa số và toán tử cơ bản.
-      const sanitized = amountStr.replace(/,/g, "").replace(/[^\d+\-*/.]/g, "")
-      if (!sanitized) return
-      
-      // eslint-disable-next-line no-new-func
-      const result = new Function(`return ${sanitized}`)()
-      
-      if (!isNaN(result)) {
-        setAmountStr(new Intl.NumberFormat("en-US").format(result))
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!amountStr || !categoryId || !walletId) return
+    
+    setLoading(true)
+    const amount = parseInt(amountStr.replace(/,/g, ""), 10)
+    const selectedCat = categories.find(c => c.id === categoryId)
+    
+    // Insert Giao dịch
+    const { error: txError } = await supabase.from('transactions').insert([{
+      wallet_id: walletId,
+      category_id: categoryId,
+      amount: amount,
+      type: selectedCat?.type || 'expense',
+      note: note
+    }])
+    
+    if (!txError) {
+      // Cập nhật số dư Ví
+      const selectedWallet = wallets.find(w => w.id === walletId)
+      if (selectedWallet) {
+        const newBalance = selectedCat?.type === 'income' 
+          ? Number(selectedWallet.balance) + amount 
+          : Number(selectedWallet.balance) - amount
+          
+        await supabase.from('wallets').update({ balance: newBalance }).eq('id', walletId)
       }
-    } catch (error) {
-      // Biểu thức không hợp lệ, bỏ qua
-      console.log(error)
+      // Reset form
+      setAmountStr("")
+      setNote("")
+      alert("Đã lưu giao dịch thành công!")
+    } else {
+      alert("Lỗi khi lưu giao dịch: " + txError.message)
     }
+    setLoading(false)
   }
 
+  if (fetching) return <div className="p-6 text-center text-muted-foreground animate-pulse">Đang tải dữ liệu...</div>
+
   return (
-    <div className="max-w-md space-y-6 bg-card p-6 rounded-lg border shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="amount">Số tiền (VNĐ)</Label>
-        <div className="relative">
-          <Input 
-            id="amount" 
-            placeholder="Ví dụ: 1,000,000 hoặc 500k+20k" 
-            value={amountStr}
-            onChange={handleAmountChange}
-            className="pr-10 text-lg font-semibold"
-          />
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground"
-            onClick={evaluateExpression}
-            title="Tính toán phép tính"
-          >
-            <Calculator className="h-4 w-4" />
-          </Button>
+        <Input 
+          id="amount" 
+          placeholder="Ví dụ: 1,000,000" 
+          value={amountStr}
+          onChange={handleAmountChange}
+          className="text-2xl font-bold h-14"
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Ví nguồn</Label>
+          <Select value={walletId} onValueChange={setWalletId} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn ví" />
+            </SelectTrigger>
+            <SelectContent>
+              {wallets.map(w => (
+                <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Danh mục</Label>
+          <Select value={categoryId} onValueChange={setCategoryId} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn danh mục" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(c => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name} {c.type === 'income' ? '(Thu)' : '(Chi)'}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Danh mục</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Chọn danh mục" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="food">Ăn uống</SelectItem>
-            <SelectItem value="transport">Đi lại</SelectItem>
-            <SelectItem value="salary">Tiền lương</SelectItem>
-            <SelectItem value="shopping">Mua sắm</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="note">Ghi chú</Label>
-        <Input id="note" placeholder="Ví dụ: Ăn trưa bún chả" />
+        <Input 
+          id="note" 
+          placeholder="Ví dụ: Ăn trưa bún chả" 
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
       </div>
 
-      <Button className="w-full">Lưu giao dịch</Button>
-    </div>
+      <Button type="submit" className="w-full h-12 text-lg font-semibold" disabled={loading || !amountStr || !categoryId}>
+        {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Lưu Giao Dịch"}
+      </Button>
+    </form>
   )
 }
