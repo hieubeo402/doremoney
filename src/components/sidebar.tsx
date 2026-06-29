@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ReceiptText, Wallet, PieChart, PiggyBank } from "lucide-react"
+import { LayoutDashboard, ReceiptText, Wallet, PieChart, PiggyBank, HandCoins } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,6 +12,7 @@ export const navigationLinks = [
   { name: "Sổ ví", href: "/wallets", icon: Wallet },
   { name: "Ngân sách", href: "/budgets", icon: PieChart },
   { name: "Tiết kiệm", href: "/savings", icon: PiggyBank },
+  { name: "Khoản nợ", href: "/loans", icon: HandCoins },
 ]
 
 export function Sidebar() {

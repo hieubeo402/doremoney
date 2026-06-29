@@ -21,15 +21,33 @@ export function TransactionForm() {
   const [fetching, setFetching] = useState(true)
 
   useEffect(() => {
-    async function fetchData() {
-      const [cats, walls] = await Promise.all([
-        supabase.from('categories').select('*'),
-        supabase.from('wallets').select('*')
-      ])
-      if (cats.data) setCategories(cats.data)
-      if (walls.data) {
-        setWallets(walls.data)
-        if (walls.data.length > 0) setWalletId(walls.data[0].id)
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      // Fetch categories
+      const { data: cats } = await supabase.from('categories').select('*')
+      if (cats && cats.length > 0) {
+        setCategories(cats)
+      } else {
+        // Fallback categories if empty
+        setCategories([
+          { id: 'cat-1', name: 'Ăn uống', icon: '🍔', type: 'expense', color: '#f59e0b' },
+          { id: 'cat-2', name: 'Lương', icon: '💰', type: 'income', color: '#10b981' }
+        ])
+      }
+      
+      // Fetch wallets
+      let wQuery = supabase.from('wallets').select('*')
+      if (session) {
+        wQuery = wQuery.or(`user_id.eq.${session.user.id},user_id.is.null`)
+      } else {
+        wQuery = wQuery.is('user_id', null)
+      }
+      
+      const { data: walletsData } = await wQuery
+      if (walletsData) {
+        setWallets(walletsData)
+        if (walletsData.length > 0) setWalletId(walletsData[0].id)
       }
       setFetching(false)
     }
