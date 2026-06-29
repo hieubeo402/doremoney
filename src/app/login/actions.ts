@@ -29,6 +29,11 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    return redirect('/signup?error=Mật khẩu nhập lại không khớp!')
+  }
 
   const formattedEmail = email.includes('@') ? email : `${email}@doremoney.app`
 

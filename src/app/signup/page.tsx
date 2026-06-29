@@ -43,6 +43,17 @@ export default function SignupPage({
                 className="bg-white/30"
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Nhập lại mật khẩu</Label>
+              <Input 
+                id="confirmPassword" 
+                name="confirmPassword" 
+                type="password" 
+                placeholder="Xác nhận lại mật khẩu"
+                required 
+                className="bg-white/30"
+              />
+            </div>
 
             {searchParams.error && (
               <p className="text-sm text-red-500 font-medium">{searchParams.error}</p>
