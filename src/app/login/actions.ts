@@ -38,11 +38,13 @@ export async function signup(formData: FormData) {
   })
 
   if (error) {
-    return redirect('/login?error=Lỗi đăng ký: ' + error.message)
+    return redirect('/signup?error=Lỗi đăng ký: ' + error.message)
   }
 
-  revalidatePath('/', 'layout')
-  redirect('/')
+  // Bắt buộc đăng xuất để tránh tự động đăng nhập nếu Confirm Email đang tắt
+  await supabase.auth.signOut()
+  
+  redirect('/login?success=Đăng ký thành công! Vui lòng đăng nhập.')
 }
 
 export async function logout() {

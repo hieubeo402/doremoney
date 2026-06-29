@@ -40,11 +40,18 @@ export async function AppLayout({ children }: AppLayoutProps) {
                 </div>
               </div>
             ) : (
-              <Link href="/login">
-                <Button size="sm" className="font-semibold shadow-md bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all">
-                  Đăng nhập
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/login">
+                  <Button size="sm" variant="outline" className="font-semibold shadow-sm border-purple-200 text-purple-700 bg-white/50 hover:bg-white/80 transition-all">
+                    Đăng nhập
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm" className="font-semibold shadow-md bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all text-white">
+                    Đăng ký
+                  </Button>
+                </Link>
+              </div>
             )}
 
           </div>
