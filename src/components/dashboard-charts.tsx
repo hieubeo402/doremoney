@@ -29,8 +29,8 @@ export function DashboardCharts({ transactions = [] }: { transactions?: any[] })
         <CardDescription>So sánh thu nhập và chi tiêu</CardDescription>
       </CardHeader>
       <CardContent className="pl-2">
-        <ResponsiveContainer width="100%" height={350}>
-          {chartData.length > 0 ? (
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
             <BarChart data={chartData}>
               <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
@@ -38,10 +38,12 @@ export function DashboardCharts({ transactions = [] }: { transactions?: any[] })
               <Bar dataKey="thu" fill="#22c55e" radius={[4, 4, 0, 0]} name="Thu" />
               <Bar dataKey="chi" fill="#ef4444" radius={[4, 4, 0, 0]} name="Chi" />
             </BarChart>
-          ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground">Chưa có dữ liệu giao dịch</div>
-          )}
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[350px] w-full flex items-center justify-center text-muted-foreground">
+            Chưa có dữ liệu giao dịch
+          </div>
+        )}
       </CardContent>
     </Card>
   )

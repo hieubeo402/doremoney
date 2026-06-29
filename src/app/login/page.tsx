@@ -47,10 +47,10 @@ export default function LoginPage({
             )}
 
             <div className="flex flex-col gap-2 pt-4">
-              <Button formAction={login} className="w-full h-11 text-base">
+              <Button type="submit" formAction={login} className="w-full h-11 text-base">
                 Đăng nhập
               </Button>
-              <Button formAction={signup} variant="outline" className="w-full h-11 text-base bg-transparent hover:bg-white/10">
+              <Button type="submit" formAction={signup} variant="outline" className="w-full h-11 text-base bg-transparent hover:bg-white/10">
                 Đăng ký mới
               </Button>
             </div>
