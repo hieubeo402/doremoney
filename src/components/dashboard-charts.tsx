@@ -3,32 +3,44 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 
-const data = [
-  { name: "T2", thu: 4000, chi: 2400 },
-  { name: "T3", thu: 3000, chi: 1398 },
-  { name: "T4", thu: 2000, chi: 9800 },
-  { name: "T5", thu: 2780, chi: 3908 },
-  { name: "T6", thu: 1890, chi: 4800 },
-  { name: "T7", thu: 2390, chi: 3800 },
-  { name: "CN", thu: 3490, chi: 4300 },
-]
+export function DashboardCharts({ transactions = [] }: { transactions?: any[] }) {
+  // Group transactions by Date to show a chart
+  // This is a simple aggregation logic for demo
+  const chartDataMap: Record<string, { name: string, thu: number, chi: number }> = {}
+  
+  transactions.forEach(tx => {
+    const dateStr = new Date(tx.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    if (!chartDataMap[dateStr]) {
+      chartDataMap[dateStr] = { name: dateStr, thu: 0, chi: 0 }
+    }
+    if (tx.type === 'income' || tx.categories?.type === 'income') {
+      chartDataMap[dateStr].thu += Number(tx.amount)
+    } else {
+      chartDataMap[dateStr].chi += Number(tx.amount)
+    }
+  })
+  
+  const chartData = Object.values(chartDataMap).reverse().slice(0, 7) // Last 7 days
 
-export function DashboardCharts() {
   return (
     <Card className="col-span-4">
       <CardHeader>
-        <CardTitle>Dòng tiền tuần này</CardTitle>
-        <CardDescription>So sánh thu nhập và chi tiêu trong tuần</CardDescription>
+        <CardTitle>Dòng tiền gần đây</CardTitle>
+        <CardDescription>So sánh thu nhập và chi tiêu</CardDescription>
       </CardHeader>
       <CardContent className="pl-2">
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={data}>
-            <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}k`} />
-            <Tooltip />
-            <Bar dataKey="thu" fill="#22c55e" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="chi" fill="#ef4444" radius={[4, 4, 0, 0]} />
-          </BarChart>
+          {chartData.length > 0 ? (
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
+              <Tooltip formatter={(value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)} />
+              <Bar dataKey="thu" fill="#22c55e" radius={[4, 4, 0, 0]} name="Thu" />
+              <Bar dataKey="chi" fill="#ef4444" radius={[4, 4, 0, 0]} name="Chi" />
+            </BarChart>
+          ) : (
+            <div className="h-full flex items-center justify-center text-muted-foreground">Chưa có dữ liệu giao dịch</div>
+          )}
         </ResponsiveContainer>
       </CardContent>
     </Card>

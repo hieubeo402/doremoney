@@ -1,8 +1,21 @@
 import { DashboardCharts } from "@/components/dashboard-charts"
 import { WalletCard } from "@/components/wallet-card"
 import { RecentTransactions } from "@/components/recent-transactions"
+import { createClient } from "@/lib/supabase/server"
 
-export default function Home() {
+export const revalidate = 0 // Disable cache to always fetch latest data
+
+export default async function Home() {
+  const supabase = await createClient()
+
+  const [walletsResponse, txResponse] = await Promise.all([
+    supabase.from('wallets').select('*').order('created_at', { ascending: true }),
+    supabase.from('transactions').select('*, categories(*)').order('created_at', { ascending: false }).limit(50)
+  ])
+
+  const wallets = walletsResponse.data || []
+  const transactions = txResponse.data || []
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,17 +24,18 @@ export default function Home() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <WalletCard title="Tiền mặt" balance={5000000} type="cash" />
-        <WalletCard title="Thẻ tín dụng" balance={-2000000} type="credit" />
-        <WalletCard title="Ví điện tử" balance={1500000} type="ewallet" />
+        {wallets.length === 0 && <p className="text-muted-foreground p-4">Chưa có ví nào.</p>}
+        {wallets.map((w: any) => (
+          <WalletCard key={w.id} title={w.name} balance={w.balance} type={w.type} />
+        ))}
       </div>
 
       <div className="grid gap-4 md:grid-cols-7">
         <div className="md:col-span-4">
-          <DashboardCharts />
+          <DashboardCharts transactions={transactions} />
         </div>
         <div className="md:col-span-3">
-          <RecentTransactions />
+          <RecentTransactions transactions={transactions} />
         </div>
       </div>
     </div>

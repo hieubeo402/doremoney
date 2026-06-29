@@ -1,14 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-const transactions = [
-  { id: "1", title: "Ăn trưa", amount: -50000, category: "Ăn uống", date: "Hôm nay" },
-  { id: "2", title: "Lương tháng", amount: 15000000, category: "Lương", date: "Hôm qua" },
-  { id: "3", title: "Cà phê", amount: -35000, category: "Ăn uống", date: "Hôm qua" },
-  { id: "4", title: "Đổ xăng", amount: -100000, category: "Đi lại", date: "2 ngày trước" },
-]
+export function RecentTransactions({ transactions = [] }: { transactions?: any[] }) {
+  // Lấy 10 giao dịch gần nhất
+  const displayTx = transactions.slice(0, 10)
 
-export function RecentTransactions() {
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -17,21 +13,31 @@ export function RecentTransactions() {
       </CardHeader>
       <CardContent>
         <div className="space-y-8">
-          {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback>{transaction.category[0]}</AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">{transaction.title}</p>
-                <p className="text-sm text-muted-foreground">{transaction.category} - {transaction.date}</p>
+          {displayTx.length === 0 && <p className="text-muted-foreground text-sm">Chưa có giao dịch nào.</p>}
+          {displayTx.map((transaction) => {
+            const isIncome = transaction.type === 'income' || transaction.categories?.type === 'income'
+            const catName = transaction.categories?.name || 'Không rõ'
+            const amountStr = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(transaction.amount)
+            
+            return (
+              <div key={transaction.id} className="flex items-center">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback style={{ backgroundColor: transaction.categories?.color + '20', color: transaction.categories?.color }}>
+                    {catName.substring(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium leading-none">{transaction.note || catName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {catName} - {new Date(transaction.created_at).toLocaleDateString('vi-VN')}
+                  </p>
+                </div>
+                <div className={`ml-auto font-medium ${isIncome ? "text-green-500" : ""}`}>
+                  {isIncome ? "+" : "-"}{amountStr}
+                </div>
               </div>
-              <div className={`ml-auto font-medium ${transaction.amount > 0 ? "text-green-500" : ""}`}>
-                {transaction.amount > 0 ? "+" : ""}
-                {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(transaction.amount)}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </CardContent>
     </Card>
