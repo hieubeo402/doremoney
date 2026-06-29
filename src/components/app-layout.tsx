@@ -10,19 +10,19 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden">
+    <div className="flex h-screen w-full bg-transparent overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-background/70 backdrop-blur-xl px-4 md:px-6 shadow-sm">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-white/20 dark:border-white/10 bg-background/40 backdrop-blur-3xl px-4 md:px-6 shadow-sm">
           <div className="md:hidden">
             <h1 className="text-xl font-extrabold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">Doremoney</h1>
           </div>
           <div className="flex-1 md:hidden" />
           <div className="flex items-center gap-4 ml-auto">
             <ThemeToggle />
-            <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+            <Avatar className="h-8 w-8 ring-1 ring-white/20 shadow-md">
               <AvatarImage src="" alt="User" />
-              <AvatarFallback className="bg-primary/10 text-primary">U</AvatarFallback>
+              <AvatarFallback className="bg-primary/20 text-primary">U</AvatarFallback>
             </Avatar>
           </div>
         </header>

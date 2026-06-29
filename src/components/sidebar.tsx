@@ -18,9 +18,9 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="hidden md:flex h-screen w-64 flex-col border-r border-white/10 bg-background/50 backdrop-blur-md">
+    <div className="hidden md:flex h-screen w-64 flex-col border-r border-white/20 dark:border-white/10 bg-background/40 backdrop-blur-3xl shadow-xl">
       <div className="p-6">
-        <h1 className="text-2xl font-extrabold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-extrabold bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent drop-shadow-sm">
           Doremoney
         </h1>
       </div>
