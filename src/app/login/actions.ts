@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
   })
 
   if (error) {
-    return redirect('/login?error=Sai tài khoản hoặc mật khẩu')
+    redirect('/login?error=' + encodeURIComponent('Sai tài khoản hoặc mật khẩu'))
   }
 
   revalidatePath('/', 'layout')
@@ -32,7 +32,7 @@ export async function signup(formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string
 
   if (password !== confirmPassword) {
-    return redirect('/signup?error=Mật khẩu nhập lại không khớp!')
+    redirect('/signup?error=' + encodeURIComponent('Mật khẩu nhập lại không khớp!'))
   }
 
   const formattedEmail = email.includes('@') ? email : `${email}@doremoney.app`
@@ -43,13 +43,13 @@ export async function signup(formData: FormData) {
   })
 
   if (error) {
-    return redirect('/signup?error=Lỗi đăng ký: ' + error.message)
+    redirect('/signup?error=' + encodeURIComponent('Lỗi đăng ký: ' + error.message))
   }
 
   // Bắt buộc đăng xuất để tránh tự động đăng nhập nếu Confirm Email đang tắt
   await supabase.auth.signOut()
   
-  redirect('/login?success=Đăng ký thành công! Vui lòng đăng nhập.')
+  redirect('/login?success=' + encodeURIComponent('Đăng ký thành công! Vui lòng đăng nhập.'))
 }
 
 export async function logout() {
