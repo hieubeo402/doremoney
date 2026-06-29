@@ -35,16 +35,8 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+  // CHẾ ĐỘ GUEST MODE: Không chặn user khi chưa đăng nhập
+  // Cho phép ai cũng có thể vào xem trang chủ.
 
   // Nếu đã đăng nhập mà vẫn cố vào /login thì đẩy về trang chủ
   if (user && request.nextUrl.pathname.startsWith('/login')) {

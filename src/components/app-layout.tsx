@@ -3,12 +3,19 @@ import { MobileNav } from "@/components/mobile-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PageTransition } from "@/components/page-transition"
+import { createClient } from "@/lib/supabase/server"
+import { LogoutButton } from "@/components/logout-button"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 interface AppLayoutProps {
   children: React.ReactNode
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export async function AppLayout({ children }: AppLayoutProps) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="flex h-screen w-full bg-transparent overflow-hidden">
       <Sidebar />
@@ -20,10 +27,26 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex-1 md:hidden" />
           <div className="flex items-center gap-4 ml-auto">
             <ThemeToggle />
-            <Avatar className="h-8 w-8 ring-1 ring-white/20 shadow-md">
-              <AvatarImage src="" alt="User" />
-              <AvatarFallback className="bg-primary/20 text-primary">U</AvatarFallback>
-            </Avatar>
+            
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Avatar className="h-8 w-8 ring-1 ring-white/20 shadow-md">
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {user.email?.substring(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden md:block">
+                  <LogoutButton />
+                </div>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button size="sm" className="font-semibold shadow-md bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all">
+                  Đăng nhập
+                </Button>
+              </Link>
+            )}
+
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6 relative z-10">

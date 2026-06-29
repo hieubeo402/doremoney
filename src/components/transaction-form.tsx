@@ -51,6 +51,15 @@ export function TransactionForm() {
     if (!amountStr || !categoryId || !walletId) return
     
     setLoading(true)
+    
+    // Kiểm tra Đăng nhập
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      alert("Vui lòng Đăng nhập / Đăng ký ở góc phải màn hình để có thể lưu dữ liệu trên Cloud!")
+      setLoading(false)
+      return
+    }
+
     const amount = parseInt(amountStr.replace(/,/g, ""), 10)
     const selectedCat = categories.find(c => c.id === categoryId)
     
@@ -60,7 +69,8 @@ export function TransactionForm() {
       category_id: categoryId,
       amount: amount,
       type: selectedCat?.type || 'expense',
-      note: note
+      note: note,
+      user_id: session.user.id
     }])
     
     if (!txError) {
